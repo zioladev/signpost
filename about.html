@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Signpost — about</title>
+<meta name="color-scheme" content="dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0c0b0a; --ink:#f4efe6; --dim:rgba(244,239,230,.66); --faint:rgba(244,239,230,.42);
+    --line:rgba(244,239,230,.13); --rule:rgba(244,239,230,.09); --accent:#c98a5c;
+    --serif:'Instrument Serif',Georgia,serif; --mono:'JetBrains Mono',ui-monospace,Menlo,monospace;
+    --sans:'Helvetica Neue',Helvetica,Arial,sans-serif; --pad:clamp(24px,4vw,56px);
+  }
+  *{box-sizing:border-box} html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 var(--pad)}
+  a{color:var(--accent);text-decoration:none} a:hover{text-decoration:underline}
+
+  .bar{display:flex;align-items:center;justify-content:space-between;padding:22px 0;border-bottom:1px solid var(--line)}
+  .mark{font:500 12px/1 var(--mono);letter-spacing:.28em;color:var(--ink)}
+  .bar .nav{display:flex;gap:22px;font:400 12px/1 var(--mono);letter-spacing:.1em}
+  .bar .nav a{color:var(--faint)} .bar .nav a:hover{color:var(--accent);text-decoration:none}
+
+  .row{display:grid;grid-template-columns:180px 1fr;gap:52px;padding:44px 0;border-top:1px solid var(--rule);align-items:start}
+  .row:first-of-type{border-top:none;padding-top:52px}
+  .row .k{font:500 11px/1.5 var(--mono);letter-spacing:.2em;text-transform:uppercase;color:var(--faint)}
+  .row .k.acc{color:var(--accent)}
+  .body{max-width:66ch}
+  .body h1{margin:0;font:400 clamp(40px,5.2vw,62px)/1.02 var(--serif);letter-spacing:-.01em;text-wrap:balance}
+  .body h2{margin:0 0 14px;font:400 28px/1.24 var(--serif);letter-spacing:-.005em;text-wrap:balance}
+  .body p{margin:0 0 15px;font:400 16px/1.68 var(--sans);color:var(--dim);text-wrap:pretty} .body p:last-child{margin-bottom:0}
+  .body .intro{margin-top:20px}
+  .body strong{color:var(--ink);font-weight:600} .body em{font-style:italic;color:var(--dim)}
+
+  pre{margin:24px 0 0;padding:18px 20px;background:rgba(244,239,230,.03);border:1px solid var(--rule);border-radius:10px;
+    overflow-x:auto;font:400 12.5px/1.7 var(--mono);color:var(--dim)}
+  pre .c{color:var(--faint)} pre .a{color:var(--accent)}
+
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-top:22px}
+  .two .kk{font:500 10.5px/1 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin-bottom:9px}
+  .two p{font-size:15px;margin:0;color:var(--dim);line-height:1.62}
+  @media (max-width:680px){.two{grid-template-columns:1fr;gap:20px}}
+
+  .end{border-top:1px solid var(--line);margin-top:8px;padding:30px 0 60px;display:flex;gap:24px;flex-wrap:wrap;
+    font:400 12px/1.6 var(--mono);letter-spacing:.06em;color:var(--faint)}
+  .end a{color:var(--faint)} .end a:hover{color:var(--accent);text-decoration:none}
+
+  @media (max-width:720px){
+    .row{grid-template-columns:1fr;gap:14px;padding:34px 0}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="bar">
+    <div class="mark">SIGNPOST</div>
+    <nav class="nav"><a href="/">home</a><a href="/dashboard.html">evidence&nbsp;→</a></nav>
+  </header>
+
+  <div class="row">
+    <div class="k acc">How it works</div>
+    <div class="body">
+      <h1>One question, asked one at a time.</h1>
+      <p class="intro">Signpost is a stateless capability resolver for WebMCP. Providers declare what their sites can do; an agent asks for one capability, and Signpost points to the sites that offer it. It never holds the plan — the agent does.</p>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="k">The boundary</div>
+    <div class="body">
+      <h2>Signpost only answers: which site can do this?</h2>
+      <p>Each lookup is independent and stateless. Signpost never receives the user's full request, never remembers a previous lookup, and never decides what should happen next. It matches one declared capability to the sites that offer it, and stops there.</p>
+      <p>Once a site is found, the agent works with that site's own WebMCP tools directly. Signpost is out of the loop.</p>
+      <pre><span class="c">// one capability in, matching sites out — no objective, no session, no next step</span>
+resolve_surface({ capability: <span class="a">"book a haircut"</span> })
+<span class="c">→</span> { matches: [ { surface_url: <span class="a">"https://chairandcomb.studio"</span>,
+               capability: { id: <span class="a">"book_appointment"</span> } } ] }</pre>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="k">Authority</div>
+    <div class="body">
+      <h2>Finding a site is not permission to act.</h2>
+      <p>Choosing what to do next doesn't authorize the agent to execute it. On the sites where an action is consequential — placing an order, booking an appointment — the provider gates execution behind an authorization of the <strong>exact terms</strong>.</p>
+      <div class="two">
+        <div><div class="kk">Trusted activation</div><p>Authorization requires a trusted browser activation on the provider's own page. Synthetic page-script activation is rejected before authorization state is created.</p></div>
+        <div><div class="kk">Re-checked at execution</div><p>If a term changes after authorization — a different time, a higher total — the action is blocked and re-authorization is required.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="k">Evidence</div>
+    <div class="body">
+      <h2>What actually happened, in two planes.</h2>
+      <p>The evidence view keeps discovery and execution facts separate. Signpost emits capability-resolution evidence; participating consequential providers emit authorization and provider-execution evidence. An <em>allow</em> decision is not proof of execution; provider calls are recorded separately.</p>
+      <p>Evidence comes from participating browser surfaces and is attributed using the browser-set Origin header. It is not authenticated provider evidence. Events are append-only at the collector API surface. <a href="/dashboard.html">See the live evidence →</a></p>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="k">Providers</div>
+    <div class="body">
+      <h2>Three sites, three declared capabilities.</h2>
+      <p><a href="https://deckhouse.coffee">deckhouse.coffee</a> — order coffee for pickup · <a href="https://chairandcomb.studio">chairandcomb.studio</a> — book a hair appointment · <a href="https://hexregistry.dev">hexregistry.dev</a> — check a hex color against a palette (read-only; no authorization gate).</p>
+    </div>
+  </div>
+
+  <footer class="end">
+    <span>signpost.ziola.dev</span><a href="/">home</a><a href="/dashboard.html">evidence</a><span>WebMCP Challenge · reference implementation</span>
+  </footer>
+</div>
+</body>
+</html>
