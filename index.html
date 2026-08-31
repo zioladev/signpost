@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Signpost — capability discovery for WebMCP agents</title>
+<meta name="description" content="Signpost points WebMCP agents to the sites that can do what they need. The agent decides what comes next.">
+<meta name="color-scheme" content="dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0c0b0a; --ink:#f4efe6; --dim:rgba(244,239,230,.62); --faint:rgba(244,239,230,.4);
+    --line:rgba(244,239,230,.13); --rule:rgba(244,239,230,.09); --accent:#c98a5c; --green:#7bb78f;
+    --serif:'Instrument Serif',Georgia,serif; --mono:'JetBrains Mono',ui-monospace,Menlo,monospace;
+    --sans:'Helvetica Neue',Helvetica,Arial,sans-serif; --pad:clamp(24px,4vw,56px);
+  }
+  *{box-sizing:border-box} html,body{margin:0;height:100%}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1180px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
+  a{color:inherit;text-decoration:none}
+  ::selection{background:var(--accent);color:var(--bg)}
+
+  .bar{display:flex;align-items:center;justify-content:space-between;padding:22px var(--pad);border-bottom:1px solid var(--line)}
+  .mark{font:500 12px/1 var(--mono);letter-spacing:.28em}
+  .bar .nav{display:flex;gap:22px;font:400 12px/1 var(--mono);letter-spacing:.1em;color:var(--faint)}
+  .bar .nav a:hover{color:var(--accent)}
+
+  .stage{flex:1;display:flex;flex-direction:column;justify-content:center;gap:clamp(30px,5vh,58px);padding:clamp(20px,3vh,40px) 0}
+  .hero{display:grid;grid-template-columns:auto 300px;justify-content:center;column-gap:clamp(36px,4.5vw,60px);align-items:center;padding:0 var(--pad)}
+  .lead{max-width:490px}
+  .lead h1{margin:0;font:400 clamp(54px,8vw,96px)/0.94 var(--serif);letter-spacing:-.02em}
+  .lead .sub{margin:8px 0 0;font:400 clamp(25px,3.4vw,38px)/1.06 var(--serif);color:var(--accent);letter-spacing:-.01em}
+  .lead .lede{margin:26px 0 0;max-width:54ch;font:400 16px/1.62 var(--sans);color:var(--dim);text-wrap:pretty}
+  .pillbar{display:flex;justify-content:center;align-items:center;gap:12px;flex-wrap:wrap;padding:0 var(--pad)}
+  .pill{display:inline-flex;align-items:center;gap:9px;padding:10px 17px;border:1px solid var(--line);border-radius:100px;
+    background:rgba(244,239,230,.02);font:400 12px/1 var(--mono);letter-spacing:.04em;color:var(--dim);white-space:nowrap}
+  .pill::before{content:"";width:5px;height:5px;border-radius:2px;background:var(--accent);opacity:.8;flex:none;transition:background .3s}
+  /* Sequential light-up: provider → agent → authorization glow accent; evidence glows green (recorded/done). */
+  .pill:nth-child(4)::before{background:var(--green)}
+  @keyframes pillAccent{
+    0%,100%{border-color:var(--line);color:var(--dim);background:rgba(244,239,230,.02)}
+    9%{border-color:var(--accent);color:var(--ink);background:rgba(201,138,92,.14)}
+    20%{border-color:var(--line);color:var(--dim);background:rgba(244,239,230,.02)}
+  }
+  @keyframes pillGreen{
+    0%,100%{border-color:var(--line);color:var(--dim);background:rgba(244,239,230,.02)}
+    9%{border-color:var(--green);color:var(--ink);background:rgba(123,183,143,.15)}
+    20%{border-color:var(--line);color:var(--dim);background:rgba(244,239,230,.02)}
+  }
+  @media (prefers-reduced-motion:no-preference){
+    .pillbar .pill{animation:pillAccent 4.4s ease-in-out infinite}
+    .pillbar .pill:nth-child(1){animation-delay:0s}
+    .pillbar .pill:nth-child(2){animation-delay:.9s}
+    .pillbar .pill:nth-child(3){animation-delay:1.8s}
+    .pillbar .pill:nth-child(4){animation-name:pillGreen;animation-delay:2.7s}
+  }
+
+  .caps{width:100%;max-width:300px}
+  .caps .eyebrow{font:500 10px/1 var(--mono);letter-spacing:.24em;text-transform:uppercase;color:var(--faint);margin-bottom:4px}
+  .cap-row{display:flex;align-items:baseline;justify-content:space-between;gap:18px;padding:16px 0;border-top:1px solid var(--rule)}
+  .cap-row:first-of-type{border-top:none}
+  .cap-row .cap{font:400 25px/1.05 var(--serif);letter-spacing:-.01em}
+  .cap-row .who{text-align:right}
+  .cap-row .prov{display:block;font:400 12.5px/1.2 var(--sans);color:var(--accent)}
+  .cap-row .host{display:block;font:400 10.5px/1.3 var(--mono);color:var(--faint);margin-top:3px}
+  .cap-row:hover .cap{color:var(--accent)}
+
+  .end{display:flex;justify-content:space-between;padding:16px var(--pad);border-top:1px solid var(--line);font:400 10.5px/1 var(--mono);letter-spacing:.1em;color:var(--faint)}
+
+  @media (max-width:820px){
+    .hero{grid-template-columns:1fr;gap:36px}
+    .caps{justify-self:stretch;max-width:none}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="bar">
+    <div class="mark">SIGNPOST</div>
+    <nav class="nav"><a href="/about.html">about&nbsp;→</a><a href="/dashboard.html">evidence&nbsp;→</a></nav>
+  </header>
+
+  <div class="stage">
+    <section class="hero">
+      <div class="lead">
+        <h1>Signpost.</h1>
+        <p class="sub">One request. Many sites.</p>
+        <p class="lede">Signpost points WebMCP agents to the sites that can do what they need. The agent decides what comes next.</p>
+      </div>
+
+      <div class="caps">
+        <div class="eyebrow">Declared capabilities</div>
+        <a class="cap-row" href="https://deckhouse.coffee">
+          <span class="cap">order coffee</span>
+          <span class="who"><span class="prov">Deckhouse Coffee</span><span class="host">deckhouse.coffee</span></span>
+        </a>
+        <a class="cap-row" href="https://chairandcomb.studio">
+          <span class="cap">book haircut</span>
+          <span class="who"><span class="prov">Chair &amp; Comb</span><span class="host">chairandcomb.studio</span></span>
+        </a>
+        <a class="cap-row" href="https://hexregistry.dev">
+          <span class="cap">check hex color</span>
+          <span class="who"><span class="prov">Hex Registry</span><span class="host">hexregistry.dev</span></span>
+        </a>
+      </div>
+    </section>
+
+    <div class="pillbar">
+      <span class="pill">provider declared</span>
+      <span class="pill">agent sequenced</span>
+      <span class="pill">authorization controlled</span>
+      <span class="pill">evidence recorded</span>
+    </div>
+  </div>
+
+  <footer class="end"><span>signpost.ziola.dev</span><span>WebMCP Challenge · reference implementation</span></footer>
+</div>
+
+<!--
+  Signpost capability resolution.
+
+  Provider declaration URLs are fetched through the same-origin declaration
+  proxy, indexed locally, and exposed through one stateless WebMCP tool:
+  resolve_surface({ capability }).
+
+  The public result contains candidate provider surfaces only. Retrieval
+  diagnostics remain internal to the resolver.
+-->
+<script type="module">
+import { buildIndex, resolve, toPublicContract } from './retrieve.js';
+
+// Seed: the provider DECLARATION URLs (their live, provider-authored files).
+// Signpost knows nothing else about them a priori — no tools, no wording, no order.
+const DECLARATION_URLS = [
+  'https://deckhouse.coffee/agent-capabilities.json',
+  'https://chairandcomb.studio/agent-capabilities.json',
+  'https://hexregistry.dev/agent-capabilities.json',
+];
+
+// ── Instrumentation: console + localStorage only, so the shell's DOM is untouched.
+const LS_KEY = 'signpost-log';
+const loadLog = () => { try { return JSON.parse(localStorage.getItem(LS_KEY) || '[]'); } catch { return []; } };
+const saveLog = (a) => { try { localStorage.setItem(LS_KEY, JSON.stringify(a.slice(-200))); } catch {} };
+let events = loadLog();
+// Discovery-plane facts the page contributes to the evidence collector (same-origin
+// POST; fire-and-forget; no-ops if the collector is absent). Observation only — this
+// does not touch resolve_surface, which stays stateless and journey-blind.
+const DISCOVERY_POST = new Set(['declaration_loaded', 'index_built', 'declarations_check', 'resolve_surface_called']);
+function postEvidence(rec) {
+  try {
+    if (typeof fetch === 'function') {
+      fetch('/api/evidence', { method: 'POST', keepalive: true, headers: { 'content-type': 'application/json' }, body: JSON.stringify(rec) }).catch(() => {});
+    }
+  } catch {}
+}
+function logEvent(kind, detail) {
+  const e = { t: new Date().toISOString().slice(11, 23), kind, detail: detail || '' };
+  events.push(e); saveLog(events);
+  console.info('[SIGNPOST]', e.t, kind, detail || '');
+  if (DISCOVERY_POST.has(kind)) postEvidence({ kind, detail: detail || '', plane: 'discovery', t: e.t });
+}
+// Console helpers for inspecting or copying the local discovery log:
+//   __signpostLog()      → returns the full event log as text
+//   __signpostCopyLog()  → copies it to the clipboard
+try {
+  window.__signpostLog = () => events.map((e) => `${e.t} ${e.kind} ${e.detail}`).join('\n');
+  window.__signpostCopyLog = () => navigator.clipboard && navigator.clipboard.writeText(window.__signpostLog());
+} catch {}
+logEvent('page_loaded', 'referrer=' + (document.referrer || '(none)'));
+console.info('[SIGNPOST] tip: run __signpostLog() in this console to copy the full event log for capture.');
+
+// ── Fetch declarations via the same-origin proxy, then build the index. A
+// per-provider failure is logged and skipped (degrade per-provider); the index
+// is a pure function of whatever declarations loaded. No journey or session
+// state is introduced.
+async function loadDeclarations() {
+  const declarations = [];
+  await Promise.all(DECLARATION_URLS.map(async (url) => {
+    try {
+      const res = await fetch('/api/declaration?url=' + encodeURIComponent(url), { method: 'GET', cache: 'no-store' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const decl = await res.json();
+      if (!decl || typeof decl.surface_url !== 'string' || !Array.isArray(decl.capabilities)) {
+        throw new Error('malformed declaration (expected { surface_url, capabilities:[] })');
+      }
+      declarations.push(decl);
+      logEvent('declaration_loaded', `${url} → ${decl.capabilities.length} capability(ies)`);
+    } catch (err) {
+      logEvent('declaration_load_failed', `${url} — ${(err && err.message) || err}`);
+    }
+  }));
+  return declarations;
+}
+
+// Register the tool immediately; execute() awaits the first index build.
+let INDEX = buildIndex([]);
+let indexReadyResolve;
+const indexReady = new Promise((r) => { indexReadyResolve = r; });
+loadDeclarations().then((declarations) => {
+  INDEX = buildIndex(declarations);
+  const total = DECLARATION_URLS.length;
+  const ok = declarations.length;
+  logEvent('index_built', `${INDEX.entries.length} capability(ies) from ${declarations.length} provider(s)`);
+  logEvent('declarations_check', `${ok}/${total} loaded — ${ok === total ? 'ok' : ok === 0 ? 'bad' : 'warn'}`);
+  try { window.__signpostReady = true; } catch {}
+  indexReadyResolve();
+});
+
+// ── WebMCP registration (native; feature-detected; no-op when absent). ────────
+const usable = (c) => c && typeof c.registerTool === 'function';
+const mc =
+  (typeof document !== 'undefined' && usable(document.modelContext) && document.modelContext) ||
+  (typeof navigator !== 'undefined' && usable(navigator.modelContext) && navigator.modelContext) ||
+  (typeof navigator !== 'undefined' && usable(navigator.modelContextTesting) && navigator.modelContextTesting) ||
+  null;
+
+if (!mc) {
+  logEvent('webmcp_absent', 'no modelContext on this browser');
+} else {
+  try {
+    mc.registerTool({
+      name: 'resolve_surface',
+      description:
+        'Find which provider surface can perform ONE capability you need, described in your own words. ' +
+        'Input: { capability: "<a single capability need, e.g. \\'order a coffee\\' or \\'book a haircut\\'>" }. ' +
+        'Returns candidate provider surface(s) — each a { surface_url, capability } you can navigate to and ' +
+        'where you then DISCOVER and call that provider’s own native tools. This resolver is STATELESS and ' +
+        'JOURNEY-BLIND: it does not know your overall objective, does not track progress, order, or history, ' +
+        'and cannot tell you what to do next. Call it once per capability need. You own the plan and the ' +
+        'sequencing; Signpost only points to where a single capability can be performed.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          capability: {
+            type: 'string',
+            description: 'A single capability need, in natural language. Not the whole objective — one thing you want to do.',
+          },
+        },
+        required: ['capability'],
+        additionalProperties: false,
+      },
+      async execute(args) {
+        await indexReady;
+        const capability = args && typeof args.capability === 'string' ? args.capability : '';
+        // Pure, stateless retrieval; diagnostic result carries score + token hits.
+        const diag = resolve(INDEX, capability);
+        // PUBLIC contract projection — candidates only, no score/hits/query echo.
+        const publicResult = toPublicContract(diag);
+        const topDiag = diag.matches.map((m) => `${m.capability.id}@${new URL(m.surface_url).host}=${m.score}`).join(', ') || '(none)';
+        logEvent('resolve_surface_called', `q=${JSON.stringify(capability)} tokens=[${diag.query_tokens.join(' ')}] → ${topDiag}`);
+        return { content: [{ type: 'text', text: JSON.stringify(publicResult, null, 2) }] };
+      },
+    });
+    logEvent('webmcp_present');
+    logEvent('tool_registered', 'resolve_surface');
+  } catch (err) {
+    logEvent('tool_register_failed', String((err && err.message) || err));
+  }
+}
+</script>
+</body>
+</html>
