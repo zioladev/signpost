@@ -1,0 +1,16 @@
+@zioladev/execution-control
+Copyright 2026 Ziola
+
+This product is licensed under the Apache License, Version 2.0 (the "License");
+you may not use this software except in compliance with the License. A copy of
+the License is provided in the LICENSE file and is also available at
+http://www.apache.org/licenses/LICENSE-2.0
+
+This package defines a NEUTRAL execution-control seam and nothing more. It takes
+no dependency on any other package, expresses no policy, terms, approval, or
+authorization mechanism, and never inspects the transported call arguments. It
+describes only what a runtime does at the seam — propose a state-changing
+execution, receive allow / block / indeterminate, proceed only on allow. How any
+execution-control authority reaches its disposition is entirely outside this
+package; a proprietary decision engine or an enterprise policy engine may each
+implement the same port with no part of their implementation visible here.
