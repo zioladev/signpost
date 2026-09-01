@@ -2,7 +2,6 @@
   "name": "signpost",
   "version": "0.1.0",
   "private": true,
-  "type": "module",
   "description": "A stateless capability resolver for WebMCP.",
   "scripts": {
     "test": "node verify.mjs && node test-dashboard.mjs && node test-evidence.mjs",
