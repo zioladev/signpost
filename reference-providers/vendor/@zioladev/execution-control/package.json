@@ -1,117 +1,59 @@
 {
-
-"name": "@zioladev/execution-control",
-
-"version": "0.1.0",
-
-"description": "A neutral seam for mediating state-changing tool execution: a runtime proposes a consequential execution, an opaque external authority returns allow / block / indeterminate, and only allow may reach the provider. Defines the seam, not how any authority decides.",
-
-"keywords": [
-
-"webmcp",
-
-"model-context",
-
-"mcp",
-
-"interoperability",
-
-"execution-control",
-
-"mediation",
-
-"agent",
-
-"tool-execution",
-
-"typescript"
-
-],
-
-"license": "Apache-2.0",
-
-"author": "Ziola",
-
-"homepage": "https://github.com/zioladev/execution-control#readme",
-
-"repository": {
-
-"type": "git",
-
-"url": "git+https://github.com/zioladev/execution-control.git"
-
-},
-
-"bugs": {
-
-"url": "https://github.com/zioladev/execution-control/issues"
-
-},
-
-"type": "module",
-
-"types": "./dist/index.d.ts",
-
-"main": "./dist/index.js",
-
-"exports": {
-
-".": {
-
-"types": "./dist/index.d.ts",
-
-"import": "./dist/index.js"
-
-},
-
-"./package.json": "./package.json"
-
-},
-
-"files": [
-
-"dist",
-
-"LICENSE",
-
-"NOTICE",
-
-"README.md"
-
-],
-
-"sideEffects": false,
-
-"engines": {
-
-"node": ">=22.6"
-
-},
-
-"scripts": {
-
-"build": "tsc -p tsconfig.json",
-
-"typecheck": "tsc -p tsconfig.json --noEmit",
-
-"test": "node --experimental-strip-types --test tests/*.test.ts"
-
-},
-
-"devDependencies": {
-
-"typescript": "^5.9.0"
-
-},
-
-"dependencies": {},
-
-"publishConfig": {
-
-"access": "public",
-
-"provenance": true
-
-}
-
+  "name": "@zioladev/execution-control",
+  "version": "0.1.0",
+  "description": "A neutral seam for mediating state-changing tool execution: a runtime proposes a consequential execution, an opaque external authority returns allow / block / indeterminate, and only allow may reach the provider. Defines the seam, not how any authority decides.",
+  "keywords": [
+    "webmcp",
+    "model-context",
+    "mcp",
+    "interoperability",
+    "execution-control",
+    "mediation",
+    "agent",
+    "tool-execution",
+    "typescript"
+  ],
+  "license": "Apache-2.0",
+  "author": "Ziola",
+  "homepage": "https://github.com/zioladev/execution-control#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zioladev/execution-control.git"
+  },
+  "bugs": {
+    "url": "https://github.com/zioladev/execution-control/issues"
+  },
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "main": "./dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "NOTICE",
+    "README.md"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=22.6"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "node --experimental-strip-types --test tests/*.test.ts"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.0"
+  },
+  "dependencies": {},
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
 }

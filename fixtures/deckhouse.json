@@ -3,7 +3,7 @@
   "capabilities": [
     {
       "id": "order_item",
-      "description": "Order coffee for pickup at Deckhouse Coffee, a small specialty roaster. A short, deliberate menu — House Blend whole bean and a Cold Brew Kit — that an agent can read, price, and buy. Ordering is a consequential action: it runs only after a human authorizes the exact terms (item and quantity) on the page, and a term changed after authorization is blocked. Demonstration shop; ordering places a mock order and takes no payment."
+      "description": "Order coffee for pickup at Deckhouse Coffee, a small specialty roaster. A short, deliberate menu — House Blend whole bean and a Cold Brew Kit — that an agent can read, price, and buy. Ordering is a consequential action: it runs only after the user authorizes the exact material terms on the provider page, and a material term changed after authorization is blocked. Demonstration shop; ordering places a mock order and takes no payment."
     }
   ]
 }
