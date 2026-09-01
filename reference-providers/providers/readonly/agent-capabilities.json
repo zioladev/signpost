@@ -1,0 +1,9 @@
+{
+  "surface_url": "https://hexregistry.dev",
+  "capabilities": [
+    {
+      "id": "check_palette",
+      "description": "Check whether a hex color belongs to a named palette at Hex Registry. Against a small set of named color palettes it verifies a specific hex value and lists the tokens in each palette. Deterministic and local: a read-only inspection computed in the page, with no authorization gate and no state-changing action."
+    }
+  ]
+}
