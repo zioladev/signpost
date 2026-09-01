@@ -58,7 +58,9 @@ This means a compound objective can be resolved one capability at a time while t
 
 ## Consequential execution
 
-The two consequential reference providers enforce authorization locally at their own mutation seams. When exact-term authorization is absent, the same pending invocation can await authorization; authorization itself does not execute the action. After authorization, that invocation resumes, re-derives and revalidates the exact material terms immediately before execution, and proceeds only on `allow`. Each authorization is single-use.
+The two consequential reference providers enforce authorization locally at their own mutation seams. When exact-term authorization is absent, the same pending invocation can await authorization; authorization itself does not execute the action.
+
+After authorization, that invocation resumes and revalidates its current candidate against the exact material terms bound to the authorization immediately before execution. It proceeds only on `allow`. Each authorization is single-use.
 
 Exact-term drift therefore fails closed. The deterministic drift test authorizes an appointment for `10:00`, presents `10:30` at execution, and returns `block` with zero provider calls.
 
@@ -69,7 +71,7 @@ npm test
 npm run test:drift
 ```
 
-The provider kit also includes a real-browser test of the await/resume path.
+The provider tests also include a real-browser await/resume test and an event-boundary regression verifying that page-visible pending terms are snapshot-isolated from the execution candidate.
 
 ## Execution-control dependency
 
@@ -89,7 +91,7 @@ A verbatim copy of the published package is included under:
 reference-providers/vendor/@zioladev/execution-control/
 ```
 
-`reference-providers/tools/verify-vendor.mjs` verifies byte identity against the installed npm package.
+`reference-providers/tools/verify-vendor.mjs` compares the complete vendored package byte-for-byte with the installed `@zioladev/execution-control@0.1.0` package and fails if files differ or are missing from either copy.
 
 ## Evidence
 
@@ -107,7 +109,9 @@ allow ≠ provider_call
 
 An `allow` disposition permits execution. It is not evidence that execution occurred.
 
-Provider evidence is browser-originated and attributed using the browser-set `Origin` header. The collector API is append-only at its exposed surface and host-allowlisted. This should not be interpreted as cryptographically authenticated or immutable provider evidence: a non-browser caller could spoof `Origin`.
+Provider evidence is browser-originated and provider-participating, and the collector attributes received facts using the request `Origin` header. The collector API is append-only at its exposed surface and host-allowlisted.
+
+This should not be interpreted as cryptographically authenticated or immutable provider evidence: a non-browser caller could spoof `Origin`.
 
 ## Try the live demonstration
 
