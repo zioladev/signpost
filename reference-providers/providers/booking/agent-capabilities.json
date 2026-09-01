@@ -1,0 +1,9 @@
+{
+  "surface_url": "https://chairandcomb.studio",
+  "capabilities": [
+    {
+      "id": "book_appointment",
+      "description": "Book a hair appointment at Chair & Comb, an appointment-only salon and barbershop. Two services done properly — a haircut and a cut & beard trim — with a choice of stylist, date, and time. Availability is readable by an agent; booking is a consequential action that requires user authorization of the exact material terms on the provider page before execution. A material term changed after authorization — for example the time moving from 10:00 to 10:30 — is blocked. Demonstration salon; booking reserves nothing and takes no payment."
+    }
+  ]
+}
