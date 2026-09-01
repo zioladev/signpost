@@ -1,0 +1,23 @@
+{
+  "name": "signpost-reference-providers",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Three minimal WebMCP reference providers for the Signpost challenge submission.",
+  "scripts": {
+    "build": "node tools/build.mjs",
+    "verify:kit": "node tools/verify-kit.mjs",
+    "verify:vendor": "node tools/verify-vendor.mjs",
+    "verify": "node tools/verify-kit.mjs && node tools/verify-vendor.mjs",
+    "test:conformance": "node test/conformance.mjs",
+    "test:acceptance": "node test/acceptance.mjs",
+    "test:await": "node test/await.mjs",
+    "test:event-boundary": "node test/event-boundary.mjs",
+    "test:smoke": "node tools/build.mjs commerce && node test/smoke-browser.mjs",
+    "test": "node test/conformance.mjs && node test/acceptance.mjs && node test/await.mjs && node test/event-boundary.mjs && node tools/verify-kit.mjs && node tools/verify-vendor.mjs",
+    "test:drift": "node test/drift.mjs"
+  },
+  "devDependencies": {
+    "@zioladev/execution-control": "0.1.0"
+  }
+}
