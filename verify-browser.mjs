@@ -7,7 +7,8 @@
 // correct provider, (4) returns only the public resolver contract, and (5) emits
 // the expected [SIGNPOST] discovery instrumentation events.
 //
-// Run: PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers node verify-browser.mjs
+// Prerequisite: npx playwright install chromium
+// Run: node verify-browser.mjs
 
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
@@ -99,8 +100,7 @@ const POLYFILL = `
   })();
 `;
 
-const browser = await chromium.launch({
-  executablePath: '/opt/pw-browsers/chromium'
+const browser = await chromium.launch();
 });
 
 const page = await browser.newPage();
