@@ -56,6 +56,68 @@ Retrieval uses transparent lexical/fuzzy matching over provider-authored capabil
 
 This means a compound objective can be resolved one capability at a time while the generic agent remains responsible for decomposition and sequence.
 
+## MCP discovery experiment
+
+The resolver can also return a provider-declared `transport` field. Omitted
+transport (or `webmcp`) means a browser surface. `mcp-streamable-http` means
+`surface_url` is an MCP endpoint: the agent's host must connect an MCP client and
+discover the provider's tools. Signpost does not make that connection or execute
+provider tools. This transport field is a Signpost convention, not an MCP standard.
+Existing WebMCP declarations and result shapes remain valid.
+
+### Hosted setup (Vercel)
+
+The standalone Design Library provider is deployed at
+`https://design-library-mcp.vercel.app/mcp`. Its health and declaration endpoints
+and retrieval of all four SVGs over MCP were verified on September 22, 2026,
+using both automatic and legacy protocol negotiation. This verifies the provider;
+discovery through the deployed Signpost still needs testing after configuration.
+
+After deploying this Signpost change, set `SIGNPOST_EXTRA_DECLARATION_URLS` in
+Signpost's Vercel project to the following value and redeploy:
+
+```json
+["https://design-library-mcp.vercel.app/agent-capabilities.json"]
+```
+
+Preserve any other extra sources already configured. No environment variable is
+needed on the design provider. The agent's host still needs an MCP client capable
+of connecting to the returned endpoint; resolver discovery does not register a
+server in the host automatically.
+
+### Optional local reproduction
+
+Start the separate Design Library MCP server on port 3100. Then, from this
+checkout, run in PowerShell:
+
+```powershell
+npm ci
+$env:SIGNPOST_EXTRA_DECLARATION_URLS='["http://127.0.0.1:3100/agent-capabilities.json"]'
+npm run dev
+```
+
+Open `http://127.0.0.1:3200` in a WebMCP-capable browser. Ask its
+`resolve_surface` tool for an original SVG illustration. The provider authors its
+capability description; configuration contains only the declaration URL.
+`/api/providers` and the declaration proxy use the same operator-controlled
+allowlist. Arbitrary browser requests cannot add providers. Extra sources are
+optional; the three original providers remain the defaults. No localhost provider
+is added to deployed defaults. Reload the page after changing the source set;
+live index refresh and mid-journey recomposition are outside this experiment.
+
+The local preview suppresses evidence writes to the deployed collector. The page's
+three reference-provider links remain static; they are not the live source index.
+The standalone server and this preview must run on the same machine as the client.
+
+Validation: `npm test` includes transport preservation, legacy result compatibility,
+configuration validation, and proxy allowlist tests. `npm run test:browser` is a
+separate mocked browser smoke test, not an autonomous-agent evaluation. Set
+`PLAYWRIGHT_EXECUTABLE_PATH` if using a locally installed Chromium executable.
+
+Observed locally on September 22, 2026: the native WebMCP resolver returned the
+MCP endpoint; an explicit SDK client discovered its tools and retrieved an SVG.
+Automatic agent-host attachment, blind discovery, and recomposition remain untested.
+
 ## Consequential execution
 
 The two consequential reference providers enforce authorization locally at their own mutation seams. When exact-term authorization is absent, the same pending invocation can await authorization; authorization itself does not execute the action.

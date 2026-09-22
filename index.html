@@ -130,15 +130,10 @@
   diagnostics remain internal to the resolver.
 -->
 <script type="module">
-import { buildIndex, resolve, toPublicContract } from './retrieve.js';
+import { buildIndex, resolve, toPublicContract, isProviderDeclaration } from './retrieve.js';
 
-// Seed: the provider DECLARATION URLs (their live, provider-authored files).
-// Signpost knows nothing else about them a priori — no tools, no wording, no order.
-const DECLARATION_URLS = [
-  'https://deckhouse.coffee/agent-capabilities.json',
-  'https://chairandcomb.studio/agent-capabilities.json',
-  'https://hexregistry.dev/agent-capabilities.json',
-];
+// The same deployment-configured source list also bounds the declaration proxy.
+// Only URLs are configured; meaning and transport are declared by the providers.
 
 // ── Instrumentation: console + localStorage only, so the shell's DOM is untouched.
 const LS_KEY = 'signpost-log';
@@ -177,14 +172,18 @@ console.info('[SIGNPOST] tip: run __signpostLog() in this console to copy the fu
 // is a pure function of whatever declarations loaded. No journey or session
 // state is introduced.
 async function loadDeclarations() {
+  const sourceResponse = await fetch('/api/providers', { cache: 'no-store' });
+  if (!sourceResponse.ok) throw new Error('Provider source list HTTP ' + sourceResponse.status);
+  const { declaration_urls: urls } = await sourceResponse.json();
+  if (!Array.isArray(urls) || !urls.every((url) => typeof url === 'string')) throw new Error('Malformed provider source list');
   const declarations = [];
-  await Promise.all(DECLARATION_URLS.map(async (url) => {
+  await Promise.all(urls.map(async (url) => {
     try {
       const res = await fetch('/api/declaration?url=' + encodeURIComponent(url), { method: 'GET', cache: 'no-store' });
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const decl = await res.json();
-      if (!decl || typeof decl.surface_url !== 'string' || !Array.isArray(decl.capabilities)) {
-        throw new Error('malformed declaration (expected { surface_url, capabilities:[] })');
+      if (!isProviderDeclaration(decl)) {
+        throw new Error('malformed declaration or unsupported transport');
       }
       declarations.push(decl);
       logEvent('declaration_loaded', `${url} → ${decl.capabilities.length} capability(ies)`);
@@ -192,19 +191,22 @@ async function loadDeclarations() {
       logEvent('declaration_load_failed', `${url} — ${(err && err.message) || err}`);
     }
   }));
-  return declarations;
+  return { declarations, total: urls.length };
 }
 
 // Register the tool immediately; execute() awaits the first index build.
 let INDEX = buildIndex([]);
 let indexReadyResolve;
 const indexReady = new Promise((r) => { indexReadyResolve = r; });
-loadDeclarations().then((declarations) => {
+loadDeclarations().then(({ declarations, total }) => {
   INDEX = buildIndex(declarations);
-  const total = DECLARATION_URLS.length;
   const ok = declarations.length;
   logEvent('index_built', `${INDEX.entries.length} capability(ies) from ${declarations.length} provider(s)`);
   logEvent('declarations_check', `${ok}/${total} loaded — ${ok === total ? 'ok' : ok === 0 ? 'bad' : 'warn'}`);
+}).catch((err) => {
+  logEvent('declaration_load_failed', String(err.message || err));
+  logEvent('declarations_check', 'provider source list unavailable — bad');
+}).finally(() => {
   try { window.__signpostReady = true; } catch {}
   indexReadyResolve();
 });
@@ -225,9 +227,12 @@ if (!mc) {
       name: 'resolve_surface',
       description:
         'Find which provider surface can perform ONE capability you need, described in your own words. ' +
-        'Input: { capability: "<a single capability need, e.g. \\'order a coffee\\' or \\'book a haircut\\'>" }. ' +
-        'Returns candidate provider surface(s) — each a { surface_url, capability } you can navigate to and ' +
-        'where you then DISCOVER and call that provider’s own native tools. This resolver is STATELESS and ' +
+        'Input: { capability: "<a single capability need, e.g. order a coffee or book a haircut>" }. ' +
+        'Returns candidates with { surface_url, capability } and an optional transport. ' +
+        'Missing transport or "webmcp" means navigate to the surface and discover its native tools. ' +
+        'Transport "mcp-streamable-http" means surface_url is an MCP endpoint: use an MCP client in your host ' +
+        'to connect and discover its tools; browser navigation alone does not connect it. ' +
+        'If your host cannot connect, report that limitation. This resolver is STATELESS and ' +
         'JOURNEY-BLIND: it does not know your overall objective, does not track progress, order, or history, ' +
         'and cannot tell you what to do next. Call it once per capability need. You own the plan and the ' +
         'sequencing; Signpost only points to where a single capability can be performed.',
