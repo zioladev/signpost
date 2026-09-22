@@ -59,13 +59,22 @@ function tokenSimilarity(q, t) {
 }
 
 // Build a stateless retrieval index from a set of provider declarations.
-// Each declaration: { surface_url, capabilities: [{ id, description }] }.
+// Each declaration: { surface_url, transport?, capabilities: [{ id, description }] }.
 // The index is a flat list of capability entries with their token bag — no
 // provider is privileged, no ordering is imposed beyond input order.
+export function isProviderDeclaration(decl) {
+  if (!decl || typeof decl.surface_url !== 'string' || !Array.isArray(decl.capabilities)) return false;
+  if (decl.transport !== undefined && !['webmcp', 'mcp-streamable-http'].includes(decl.transport)) return false;
+  try {
+    const url = new URL(decl.surface_url);
+    return ['https:', 'http:'].includes(url.protocol) && !url.username && !url.password;
+  } catch { return false; }
+}
+
 export function buildIndex(declarations) {
   const entries = [];
   for (const decl of declarations || []) {
-    if (!decl || typeof decl.surface_url !== 'string' || !Array.isArray(decl.capabilities)) continue;
+    if (!isProviderDeclaration(decl)) continue;
     for (const cap of decl.capabilities) {
       if (!cap || typeof cap.id !== 'string' || typeof cap.description !== 'string') continue;
       // id tokens are weighted a touch higher than description tokens: the id is
@@ -77,6 +86,7 @@ export function buildIndex(declarations) {
       for (const tk of descTokens) weights.set(tk, Math.max(weights.get(tk) || 0, 1.0));
       entries.push({
         surface_url: decl.surface_url,
+        ...(decl.transport === undefined ? {} : { transport: decl.transport }),
         capability: { id: cap.id, description: cap.description },
         terms: [...weights.entries()].map(([term, weight]) => ({ term, weight })),
       });
@@ -127,7 +137,11 @@ export function resolve(index, query, { floor = 0.25, limit = 5 } = {}) {
   const scored = (index.entries || [])
     .map((entry) => {
       const { score, hits } = scoreEntry(queryTokens, entry);
-      return { surface_url: entry.surface_url, capability: entry.capability, score, hits };
+      return {
+        surface_url: entry.surface_url,
+        ...(entry.transport === undefined ? {} : { transport: entry.transport }),
+        capability: entry.capability, score, hits,
+      };
     })
     .filter((r) => r.score >= floor)
     .sort((a, b) => b.score - a.score)
@@ -143,6 +157,7 @@ export function toPublicContract(resolved) {
   return {
     matches: (resolved.matches || []).map((m) => ({
       surface_url: m.surface_url,
+      ...(m.transport === undefined ? {} : { transport: m.transport }),
       capability: { id: m.capability.id, description: m.capability.description },
     })),
   };

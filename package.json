@@ -4,7 +4,8 @@
   "private": true,
   "description": "A stateless capability resolver for WebMCP.",
   "scripts": {
-    "test": "node verify.mjs && node test-dashboard.mjs && node test-evidence.mjs",
+    "dev": "node dev-server.mjs",
+    "test": "node verify.mjs && node test-dashboard.mjs && node test-evidence.mjs && node --test test-mcp-resolution.mjs",
     "test:browser": "node verify-browser.mjs"
   },
   "devDependencies": {

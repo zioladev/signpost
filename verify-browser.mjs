@@ -39,6 +39,9 @@ const send = (res, type, body, code = 200) => {
 };
 
 const server = http.createServer((req, res) => {
+  if (req.url === '/api/providers') {
+    return send(res, 'application/json', JSON.stringify({ declaration_urls: [...PROXY_MAP.keys()] }));
+  }
   if (req.url.startsWith('/api/declaration')) {
     const u = new URL(req.url, 'http://x').searchParams.get('url') || '';
 
@@ -99,9 +102,9 @@ const POLYFILL = `
   })();
 `;
 
-const browser = await chromium.launch({
-  executablePath: '/opt/pw-browsers/chromium'
-});
+const browser = await chromium.launch(process.env.PLAYWRIGHT_EXECUTABLE_PATH
+  ? { executablePath: process.env.PLAYWRIGHT_EXECUTABLE_PATH }
+  : {});
 
 const page = await browser.newPage();
 const consoleLines = [];

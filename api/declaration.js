@@ -6,26 +6,28 @@
 //
 // The proxy does not add or modify capability data. It validates that the
 // upstream body is JSON and relays the declaration to the Signpost page.
-// Only the seeded provider declaration URLs are allowed, so this is not an
+// Only operator-configured provider declaration URLs are allowed, so this is not an
 // open proxy.
 
-const ALLOWED = new Set([
-  'https://deckhouse.coffee/agent-capabilities.json',      // commerce  — order_item (gated)
-  'https://chairandcomb.studio/agent-capabilities.json',   // booking   — book_appointment (gated)
-  'https://hexregistry.dev/agent-capabilities.json',        // read-only — check_palette (ungated)
-]);
+const { declarationUrls } = require('../provider-sources.cjs');
 
 module.exports = async function handler(req, res) {
+  let allowed;
+  try { allowed = new Set(declarationUrls()); }
+  catch {
+    res.status(500).json({ error: 'Invalid provider source configuration' });
+    return;
+  }
   const url = req.query && typeof req.query.url === 'string' ? req.query.url : '';
   res.setHeader('Access-Control-Allow-Origin', '*'); // page is same-origin; harmless
   res.setHeader('Cache-Control', 'public, max-age=60');
 
-  if (!ALLOWED.has(url)) {
-    res.status(400).json({ error: 'url not in allowlist', allowed: [...ALLOWED] });
+  if (!allowed.has(url)) {
+    res.status(400).json({ error: 'url not in allowlist', allowed: [...allowed] });
     return;
   }
   try {
-    const upstream = await fetch(url, { headers: { accept: 'application/json' } });
+    const upstream = await fetch(url, { headers: { accept: 'application/json' }, signal: AbortSignal.timeout(10000) });
     if (!upstream.ok) {
       res.status(502).json({ error: `upstream HTTP ${upstream.status}`, url });
       return;
